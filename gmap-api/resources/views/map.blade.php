@@ -11,6 +11,8 @@
         <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
         <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCD4JTzve2Q6-tquziaP7Gv7o-4_Yzd0aY&callback=initMap"></script>
         {{-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCD4JTzve2Q6-tquziaP7Gv7o-4_Yzd0aY&callback=initMap&libraries=&v=weekly" defer></script> --}}
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
         <!-- Styles -->
         <style>
             html, body {
@@ -178,29 +180,36 @@
         </script> --}}
 
         <!-- CIRCLE MARKER -->
-        <script type="text/javascript">
+        {{-- <script type="text/javascript">
             const nodemap = {
                 SensorNodeA: {
+                    title: "Sensor Node A",
                     center: { lat:  1.119679, lng: 104.048445 },
                     population: 200
                 },
                 SensorNodeB: {
+                    title: "Sensor Node B",
                     center: { lat: 1.119758, lng: 104.049405 },
                     population: 200
                 },
                 SensorNodeC: {
+                    title: "Sensor Node C",
                     center: { lat: 1.118752, lng: 104.050337 },
                     population: 200
                 },
                 SensorNodeD: {
+                    title: "Sensor Node D",
                     center: { lat: 1.118869, lng: 104.047097 },
                     population: 200
                 },
                 SensorNodeE: {
+                    title: "Sensor Node E",
                     center: { lat: 1.117819, lng: 104.047335 },
                     population: 200
                 }
             };
+            
+
 
             function initMap() {
             // Create the map.
@@ -214,6 +223,19 @@
             }); 
 
             for (const node in nodemap) {
+                console.log('==============tester===============');
+                console.log(nodemap[node]["population"]);
+                console.log('==============tester===============');
+
+                var contentString =
+                '<div id="content">' +
+                '<div id="siteNotice">' +
+                "</div>" +
+                '<h1 id="firstHeading" class="firstHeading">'+nodemap[node]+'</h1>' +
+                '<div id="bodyContent">' +
+                "<p>Kadar ISPU :</p>" +
+                "</div>" +
+                "</div>";
                 // Add the circle for this city to the map.
                 const nodeCircle = new google.maps.Circle({
                     strokeColor: "#00B01D",
@@ -222,19 +244,89 @@
                     fillColor: "#00B01D",
                     fillOpacity: 0.35,
                     map,
-                    center: nodemap[node].center,
-                    radius: Math.sqrt(nodemap[node].population) * 1
+                    center: nodemap[node]["center"],
+                    radius: Math.sqrt(nodemap[node]["population"]) * 1
                 });
 
-                var infowindow = new google.maps.InfoWindow();
+                var infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
 
-                google.maps.event.addListener(nodeCircle, 'click', function(e){
-                    infowindow.setContent(nodemap);
-                    infowindow.setPosition(e.LatLng);
+                google.maps.event.addListener(nodeCircle, 'click', function(ev){
+                    // infowindow.setContent(this.getCenter().contentString + "<br>");
+                    infowindow.setPosition(this.getCenter());
                     infowindow.open(map);
                 })
             }
             }
+        </script> --}}
+
+
+        <script>
+
+                // Create an object containing LatLng, population.
+                var nodePoints = {};
+
+                nodePoints[0] = {
+                    center: new google.maps.LatLng(1.119679, 104.048445),
+                    id: 0,
+                    addr: 'Sensor Node A',
+                    magnitude: 200
+                };
+                nodePoints[1] = {
+                    center: new google.maps.LatLng(1.119758, 104.049405),
+                    id: 1, 
+                    addr: 'Sensor Node B',
+                    magnitude: 200
+                };
+                nodePoints[2] = {
+                    center: new google.maps.LatLng(1.118752, 104.050337),
+                    id: 2,
+                    addr: 'Sensor Node C',
+                    magnitude: 200
+                }
+
+                var nodeCircle;
+                var infoWindow = new google.maps.InfoWindow();  
+
+                function initialize() {
+                var mapOptions = {
+                    zoom: 17,
+                    center: new google.maps.LatLng(1.118709, 104.048585),
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+
+                var map = new google.maps.Map(document.getElementById('map'),
+                    mapOptions);
+
+                for (i in nodePoints) {
+                        var magnitudeOptions = {
+                                strokeColor: "#00B01D",
+                                strokeOpacity: 0.8,
+                                strokeWeight: 0,
+                                fillColor: "#00B01D",
+                                fillOpacity: 0.35,
+                                map: map,
+                                center: nodePoints[i].center,
+                                radius: nodePoints[i].magnitude,
+                                id:nodePoints[i].id,
+                                addr:nodePoints[i].addr,
+                                infoWindowIndex: i
+                            };
+                nodeCircle = new google.maps.Circle(magnitudeOptions);
+
+                    google.maps.event.addListener(nodeCircle, 'click', (function(nodeCircle, i) {
+                        return function() {
+                            infoWindow.setContent(nodePoints[i].id + " " + nodePoints[i].addr);
+                            infoWindow.setPosition(nodeCircle.getCenter());
+                            infoWindow.open(map);
+                        }
+                    })(nodeCircle, i));
+                }
+                }
+                google.maps.event.addDomListener(window, 'load', initialize);
+
+
         </script>
     </body>
 </html>
